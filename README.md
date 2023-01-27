@@ -1,5 +1,5 @@
 # ForecastPM
-Code by Paolo Fazzini linked to the article "Forecasting PM levels using machine learning models in polar areas: a comparative study" by Fazzini et al. See the article for details.
+Code by Paolo Fazzini linked to the article "Forecasting PM levels using machine learning models in polar areas: a comparative study" by Fazzini, Montuori, Pasini, Cuzzucoli, Crotti, Campana, Petracchini and Dobricic. See the article for details.
 
 Tested with Ubuntu 18.04.
 
