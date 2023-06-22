@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from pandas import read_csv
 
+'''
 # convert series to supervised learning
 def _series_to_supervised(data, n_in=1, n_out=1):
 	"""
@@ -36,45 +37,50 @@ def _series_to_supervised(data, n_in=1, n_out=1):
 	# drop rows with NaN values
 	agg.dropna(inplace=True)
 	return agg
+'''
 
 
+def read_data(folder, dataset_name):
 
-def read_data(dataset_name):
+    use_averaged_data = True
 
-    # read_cvs() for _ENS_4pnts
-    
-    dtf = read_csv(
-                    'Data/' + dataset_name + '_pm10_ENS_4pnts.txt',
-                    sep='\s+',
-                    header=None, 
-                    skiprows=lambda x: x % 4 != 0
+    if use_averaged_data:
+        # read_cvs() for _ENS
+        dtf = read_csv(
+                    folder + '/' + dataset_name + '_pm10_ENS.csv',
+                    sep='\t', 
+                    #sep='\s+' #tmp pao
                 )
+    else:
+        # read_cvs() for _ENS_4pnts
+        dtf = read_csv(
+                        folder + '/' + dataset_name + '_pm10_ENS_4pnts.txt',
+                        sep='\s+',
+                        skiprows=lambda x: x % 4 != 0
+                    )
     
 
-    # read_cvs() for _ENS
+
+    #dtf['datetime'] = pd.to_datetime(dtf[['D', 'M', 'Y', 'H']].astype(int).astype(str).apply(' '.join, 1), format='%d %m %Y %H')  # read_cvs() for _ENS
     '''
-    dtf = read_csv(
-                    'Data/' + dataset_name + '_pm10_ENS.txt',
-                    sep='\s+',
-                    header=None
-                )
+    obs_arr = dtf['Obs'][::9].reset_index(drop=True).astype(float).to_numpy()
+    mask = np.zeros(len(obs_arr))
+    obs_struct_arr = list(map(list, zip(obs_arr, mask)))
+    dtf_obs = pd.Series(obs_struct_arr) # read_cvs() for _ENS
     '''
 
-    #dtf['datetime'] = pd.to_datetime(dtf[[3, 2, 1, 4]].astype(int).astype(str).apply(' '.join, 1), format='%d %m %Y %H')  # read_cvs() for _ENS
-    dtf['datetime'] = pd.to_datetime(dtf[[4, 3, 2, 5]].astype(int).astype(str).apply(' '.join, 1), format='%d %m %Y %H') # read_cvs() for _ENS_4pnts
 
-    dtf.head()
-    #dtf_obs = dtf[5][::9].reset_index(drop=True).astype(float) # read_cvs() for _ENS
-    dtf_obs = dtf[6][::9].reset_index(drop=True).astype(float) # read_cvs() for _ENS_4pnts
+    dtf_obs = dtf['Obs'][::9].reset_index(drop=True).astype(float) # read_cvs() for _ENS
+
     dtf_CAMS = [[] for _ in range(9)]
     for i in range(9):
-        for j in range(3):
-            #dtf_CAMS[i].append(dtf[6+j][i::9].reset_index(drop=True).astype(float)) # read_cvs() for _ENS
-            dtf_CAMS[i].append(dtf[7+j][i::9].reset_index(drop=True).astype(float)) # read_cvs() for _ENS_4pnts
+        for pred in ['Pred0', 'Pred24', 'Pred48']:
+            dtf_CAMS[i].append(dtf[pred][i::9].reset_index(drop=True).astype(float)) # read_cvs() for _ENS
+
     return dtf_obs, dtf_CAMS
 
 
-def correct_eventual_gaps(data_in, broken_value_flag = -1000):
+def correct_eventual_gaps(data_in, thsh_value_to_fix = None):
 
     # This function needs a 2D list as an input: if it is not provided...
     # ...data needs to be properly encapsulated
@@ -88,11 +94,12 @@ def correct_eventual_gaps(data_in, broken_value_flag = -1000):
 
    
     for model_data in data_proc:
-        for ic, cam_data in enumerate(model_data):
-            for i, data in enumerate(cam_data):
-                if (data == broken_value_flag):
-                    cam_data[i] = np.nan
-            model_data[ic] = cam_data.interpolate()
+        for ic, list_data in enumerate(model_data):
+            if thsh_value_to_fix != None:
+                for i, data in enumerate(list_data):
+                    if (data >= thsh_value_to_fix):
+                        list_data[i] = np.nan
+            model_data[ic] = list_data.interpolate(limit_direction='both', method='linear') # Fix eventual NaNs
 
     # Eventually decapsulate
     if type(data_in) is not list:

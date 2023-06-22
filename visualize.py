@@ -1,7 +1,8 @@
 import os
+import json
 from matplotlib import pyplot
 
-def _create_dir_in_case(dir_):
+def create_dir_in_case(dir_):
 
     if not os.path.exists(dir_):
         os.makedirs(dir_)
@@ -12,7 +13,7 @@ def _create_dir_in_case(dir_):
 def plot_graphs_llist(dir_data, file_name_stub, list_graphs, design = None):
     if design != None:
         dir_data = dir_data + "_" + design
-    _create_dir_in_case(dir_data)
+    create_dir_in_case(dir_data)
     n = len(list_graphs)
     for i in range(n):
         pyplot.figure()
@@ -28,7 +29,7 @@ def plot_graphs_llist(dir_data, file_name_stub, list_graphs, design = None):
 
 def plot_graphs_stacked(dir_, file_name_stub, design, graphs, highlight_id = None):
     dir_data = dir_ + "_" + design
-    _create_dir_in_case(dir_data)
+    create_dir_in_case(dir_data)
 
     graph_ids = list(range(graphs.shape[1]))
 
@@ -52,10 +53,10 @@ def plot_graphs_stacked(dir_, file_name_stub, design, graphs, highlight_id = Non
     pyplot.close('all')
 
 
-def plot_bars(dir_, file_name_stub, design, indexes, cams, pers, model):
+def plot_bars(dir_, file_name_stub, design, indexes, cams, pers, model, do_log = True):
     # This function is application specific
     dir_data = dir_ + "_" + design
-    _create_dir_in_case(dir_data)
+    create_dir_in_case(dir_data)
     pyplot.clf()
     pyplot.bar(indexes, cams, color = "orange")
     pyplot.bar(12, pers, color = "red")
@@ -68,16 +69,36 @@ def plot_bars(dir_, file_name_stub, design, indexes, cams, pers, model):
     pyplot.savefig(filename)
     pyplot.close('all')
     
+    # Log
+    if do_log:
+        logfilename = dir_data + "/" + file_name_stub + ".txt"
+        out_dict = {"cams":cams, "pers":pers, "model":model}
+        with open(logfilename, 'w') as f:
+            json.dump(out_dict, f, indent = 4, sort_keys=True)
 
-def plot_multi_graphs(dir_, file_name_stub, design, graphs, labels):
+    
+
+
+
+def plot_multi_graphs(dir_, file_name_stub, design, graphs, labels, do_log = True, alpha = 1):
     dir_data = dir_ + "_" + design
-    _create_dir_in_case(dir_data)
+    create_dir_in_case(dir_data)
     pyplot.clf()
     pyplot.grid(True)
+    #pyplot.ylim(0, 1.4)
     for graph, label in zip(graphs, labels):
-        pyplot.plot(graph, label=label)
+        pyplot.plot(graph, label=label, alpha=alpha, linewidth=1.0)
         pyplot.legend()
     #pyplot.show()
     filename = dir_data + "/" + file_name_stub + ".png"
     pyplot.savefig(filename)
     pyplot.close('all')
+    
+    # Log
+    if do_log:
+        logfilename = dir_data + "/" + file_name_stub + ".txt"
+        for i, graph in enumerate(graphs):
+            graphs[i] = graph.tolist()
+        out_dict = {"graphs":graphs, "labels":labels}
+        with open(logfilename, 'w') as f:
+            json.dump(out_dict, f, indent = 4, sort_keys=True)
