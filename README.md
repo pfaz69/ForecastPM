@@ -10,7 +10,7 @@ To import the related conda environment, use prediction.yml
 
 
 # Citation
-If you find this useful in your research, please cite our paper "Forecasting PM10 Levels Using Machine Learning Models in the Arctic: A Comparative Study". Here's the BibTex reference:
+If you find this useful in your research, please cite our paper "Forecasting PM10 Levels Using Machine Learning Models in the Arctic: A Comparative Study". Here's the BibTeX reference:
 
 @Article{Fazzini2023pm10,
 AUTHOR = {Fazzini, Paolo and Montuori, Marco and Pasini, Antonello and Cuzzucoli, Alice and Crotti, Ilaria and Campana, Emilio Fortunato and Petracchini, Francesco and Dobricic, Srdjan},
